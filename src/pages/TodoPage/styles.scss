@@ -1,0 +1,35 @@
+.todo-item {
+    width: 400px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.todo-lists {
+    flex: 1 1 0px;
+    max-height: 100%;
+    overflow: hidden;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+
+    .full {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-left: auto;
+    }
+
+    .sort {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+    }
+}

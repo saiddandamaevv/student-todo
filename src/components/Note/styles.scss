@@ -1,0 +1,8 @@
+.note {
+    transition: transform 0.3s ease;
+    white-space: pre-line;
+}
+
+.note:hover {
+    transform: scale(1.05);
+}
