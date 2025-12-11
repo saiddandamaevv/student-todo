@@ -13,24 +13,35 @@ function convertTask(data) {
     };
 }
 
-export async function createTask(data) {
+export async function createTask(data, projectId) {
     try {
         const response = await server.post(`/todo/create`, {
             title: data.title,
             description: data.description,
             deadline: data.endDate.toISOString(),
             importance: data.importance,
+            project_id: projectId
         });
-        return { error: false, task: convertTask(response.data) };
+
+        const result = {
+            title: data.title,
+            description: data.description,
+            deadline: data.endDate.toISOString(),
+            importance: data.importance,
+            project_id: projectId,
+            id: response.data.id
+        }
+        console.log(result)
+        return { error: false, task: convertTask(result) };
     } catch (err) {
         return { error: true };
     }
 }
 
 
-export async function fetchTasks() {
+export async function fetchTasks(projectId) {
     try {
-        const response = await server.get("/todo/all");
+        const response = await server.get(`/projects/${projectId}/tasks`);
         const list = response.data ?? [];
         const result = {
             waiting: [],
@@ -52,17 +63,21 @@ export async function fetchTasks() {
     }
 }
 
-export async function updateTask(id, data) {
+export async function updateTask(id, data, projectId) {
+    console.log(123)
+    console.log(id, data, projectId)
     try {
         await server.put(`/todo/${id}/edit`, {
             title: data.title,
             description: data.description,
             deadline: data.endDate.toISOString(),
-            createdAt: data.startDate.toISOString(),
+            // createdAt: data.startDate.toISOString(),
             importance: data.importance,
+            project_id: projectId
         });
         return { error: false };
     } catch (err) {
+        console.log(err)
         return { error: true };
     }
 }

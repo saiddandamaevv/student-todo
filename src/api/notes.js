@@ -6,12 +6,13 @@ function convertNote(data) {
         id: data.id,
         title: data.name,
         text: data.description,
+        createdAt: data.created_at
     };
 }
 
-export async function fetchNotes() {
+export async function fetchNotes(projectId) {
     try{
-        const response = await server.get(`/notes/all`);
+        const response = await server.get(`/projects/${projectId}/notes`);
         const list = response.data ?? [];
         const result = [];
 
@@ -29,11 +30,13 @@ export async function fetchNotes() {
 }
 
 
-export async function createNote(data){
+export async function createNote(data, projectId){
     try{
+        console.log('Данные для создания заметки', data, projectId)
         const response = await server.post(`/notes/create`, {
             name: data.title,
-            description: data.text
+            description: data.text,
+            project_id: projectId
         });
         const result = {
             id: response.data.id,
@@ -48,11 +51,12 @@ export async function createNote(data){
     }
 }
 
-export async function updateNote(id, data) {
+export async function updateNote(id, data, projectId) {
     try {
         await server.put(`/notes/${id}/edit`, {
             name: data.title,
             description: data.text,
+            project_id: projectId
         });
         return { error: false };
     } catch (err) {

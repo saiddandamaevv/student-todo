@@ -1,6 +1,7 @@
 import { createContext, useState } from "react";
 import { getMe, logout } from "../api/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { fetchProjects } from "../api/project";
 
 export const UserContext = createContext({
     value: null,
@@ -10,6 +11,7 @@ export const UserContext = createContext({
 });
 
 export default function UserProvider(props) {
+    const { id } = useParams();
     const [user, setUser] = useState(null);
     const navigateTo = useNavigate();
 
@@ -22,9 +24,22 @@ export default function UserProvider(props) {
                 navigateTo("/signin");
             }
         },
-        onFetch: async () => {
+        onFetch: async (index = 0, id) => {
             setUser(null);
-            const res = await getMe();
+            const me = await getMe();
+            const project = await fetchProjects();
+            let data;
+            if (id !== undefined) {
+                data = project.data.find(p => p.id === id);
+                data.isMine = false;
+            } else {
+                data = project.data[index];
+                data.isMine = index === 0;
+            }
+            const res = {
+                ...me,
+                project: data
+            }
             if (!res.error) {
                 setUser(res);
             } else {

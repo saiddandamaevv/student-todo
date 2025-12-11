@@ -1,4 +1,4 @@
-import { AccountCircle, Mail, More, Notifications } from "@mui/icons-material";
+import { AccountCircle, Description, Mail, More, Notifications } from "@mui/icons-material";
 import { AppBar, Badge, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -8,13 +8,31 @@ export default function Header() {
     const navigateTo = useNavigate();
     const location = useLocation();
     const user = useContext(UserContext);
-    const [t, setT] = useState(null)
+    const [t, setT] = useState(null);
+    const [selectedProject, setSelectedProject] = useState(null);
 
     useEffect(() => {
-        if (user.value === null) {
+
+        const path = location.pathname;
+        const match = path.match(/^\/projects\/([^\/]+)/); // захватываем всё после /projects/ до следующего /
+        const urlProjectId = match ? match[1] : null;
+        if (urlProjectId) {
+            user.onFetch(0, urlProjectId)
+        } else if (user.value === null) {
             user.onFetch();
         }
     }, []);
+
+    useEffect(() => {
+        if (user.value?.project.isMine) return;
+        const data = {
+            name: user.value?.project.name,
+            description: user.value?.project.description,
+            id: user.value?.project.id
+        }
+        console.log('data', data)
+        setSelectedProject(data);
+    }, [user.value?.project.id])
 
     useEffect(() => {
         if (!["/signin", "/signup"].includes(location.pathname)) {
@@ -43,6 +61,20 @@ export default function Header() {
                 <Link to="/" style={{ all: "unset", cursor: "pointer" }}>STUDENT TODO</Link>
             </Typography>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {!selectedProject?.name &&
+                    <Link to="/projects">
+                        <Button key="d" sx={{ color: '#fff' }}>
+                            Проекты
+                        </Button>
+                    </Link>
+                }
+                {selectedProject?.name &&
+                    <Link to={`/projects/${selectedProject?.id}`}>
+                        <Button key="d" sx={{ color: '#fff' }}>
+                            Проект: {selectedProject?.name}
+                        </Button>
+                    </Link>
+                }
                 <Link to="/todo">
                     <Button key="d" sx={{ color: '#fff' }}>
                         Задачи
@@ -53,10 +85,21 @@ export default function Header() {
                         Заметки
                     </Button>
                 </Link>
+                {selectedProject?.name &&
+                    <Link to="/members">
+                        <Button key="d" sx={{ color: '#fff' }}>
+                            Участники
+                        </Button>
+                    </Link>
+                }
             </Box>
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: { xs: 'flex' } }}>
-                <Button key="d" sx={{ color: '#fff' }} onClick={(ev) => handleSignin(ev)}>
+                <Button key="d" sx={{ color: '#fff' }} onClick={(ev) => {
+                    handleSignin(ev)
+                    console.log(user.value)
+                }
+                }>
                     {user.value ? user.value.username : "Войти"}
                 </Button>
                 <Menu

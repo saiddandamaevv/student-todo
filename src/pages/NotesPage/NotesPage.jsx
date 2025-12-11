@@ -1,14 +1,17 @@
 import { Box } from "@mui/material";
 import Header from "../../components/Header/Header";
 import "./styles.scss";
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import Note from "../../components/Note/Note";
 import { fetchNotes, createNote, updateNote, removeNote } from "../../api/notes";
 import NoteModal from "../../components/NoteModal/NoteModal";
 import FloatingActionButton from "../../components/FloatingButton/FloatingButton"
+import { UserContext } from "../../context/UserContext";
+
 
 
 export default function NotesPage() {
+    const user = useContext(UserContext);
     const [notes, setNotes] = React.useState([]);
     const [editNote, setEditNote] = React.useState(null);
 
@@ -16,15 +19,23 @@ export default function NotesPage() {
     const [editNoteModal, openEditNoteModal] = React.useState(false);
 
     useEffect(() => {
-        fetchNotes().then((response) => {
+        fetchNotes(user.value?.project.id).then((response) => {
             if (!response.error) {
                 setNotes(response.data);
             }
         });
     }, [])
 
+    useEffect(() => {
+        fetchNotes(user.value?.project.id).then((response) => {
+            if (!response.error) {
+                setNotes(response.data);
+            }
+        });
+    }, [user.value?.project.id])
+
     async function handleCreateNote(form) {
-        const { error, note } = await createNote(form);
+        const { error, note } = await createNote(form, user.value.project.id);
         if (!error) {
             setNotes(prev => [...prev, note]);
         }
@@ -32,11 +43,12 @@ export default function NotesPage() {
 
     async function handleChangeNote(form) {
         const newData = { ...editNote, ...form };
-        console.log(editNote.id);
-        const { error } = await updateNote(editNote.id, newData);
+        // console.log(editNote.id);
+        // console.log(user.value.project.id)
+        const { error } = await updateNote(editNote.id, newData, user.value.project.id);
         if (!error) {
-            setNotes(prev => prev.map(note => 
-            note.id === editNote.id ? newData : note
+            setNotes(prev => prev.map(note =>
+                note.id === editNote.id ? newData : note
             ));
         }
     }
@@ -48,7 +60,27 @@ export default function NotesPage() {
         }
     }
 
+    function convertData(date) {
+        const now = new Date();
+        const inputDate = new Date(date);
 
+        const diffMs = now - inputDate;
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (diffHours >= 0 && diffHours < 24) {
+            return inputDate.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            });
+        }
+
+        return inputDate.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    }
 
     return (<Box>
         <Header />
@@ -60,10 +92,11 @@ export default function NotesPage() {
         }}>
             {notes?.map((item, index) =>
                 <Note
-                    key = {item.id}
-                    title = {item.title}
-                    text = {item.text}
-                    onNoteClick = {() => {
+                    key={item.id}
+                    title={item.title}
+                    text={item.text}
+                    createdAt={convertData(item.createdAt)}
+                    onNoteClick={() => {
                         setEditNote(item);
                         openEditNoteModal(true);
                     }}
@@ -73,19 +106,19 @@ export default function NotesPage() {
 
         <FloatingActionButton onClick={() => openCreateNoteModal(true)} />
 
-        <NoteModal 
+        <NoteModal
             opened={editNoteModal}
-            note={editNote} 
+            note={editNote}
             onChange={(form) => handleChangeNote(form)}
             onDelete={() => handleDeleteNote(editNote.id)}
-            onClose={() => openEditNoteModal(false)} 
+            onClose={() => openEditNoteModal(false)}
         />
 
-        <NoteModal 
+        <NoteModal
             new
             opened={createNoteModal}
             onCreate={(form) => handleCreateNote(form)}
-            onClose={() => openCreateNoteModal(false)} 
+            onClose={() => openCreateNoteModal(false)}
         />
 
     </Box>)

@@ -79,7 +79,7 @@ export default function SignupForm() {
         const res = await signup(form.name, form.email, form.login, form.password, form.repeatPassword);
 
         if (!res.error) {
-            user.onFetch();
+            // user.onFetch();
             navigate("/");
         } else {
             setErrorMessage("Ошибка регистрации");

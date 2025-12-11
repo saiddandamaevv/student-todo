@@ -11,7 +11,6 @@ export default function Note(props) {
             display: "inline-block"
         }}
     >
-        <Typography>{props.title}</Typography> 
         <Box
             className="note"
             onClick={() => props.onNoteClick({
@@ -29,8 +28,18 @@ export default function Note(props) {
             }}>
             <Typography>
                 {props.text}
-            </Typography> 
+            </Typography>
         </Box>
+        <Typography
+            sx={{
+                mt: '7px'
+            }}
+        >{props.title}</Typography>
+        <Typography
+            sx={{
+                color: "text.secondary"
+            }}
+        >{props.createdAt}</Typography>
     </Box>
 }
 

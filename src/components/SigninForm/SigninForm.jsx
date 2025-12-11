@@ -62,7 +62,7 @@ export default function SigninForm() {
 
         const res = await signin(form.login, form.password);
         if (!res.error) {
-            user.onFetch();
+            // user.onFetch();
             navigate("/");
         } else {
             setErrorMessage("Ошибка при входе. Проверьте логин и пароль.");
